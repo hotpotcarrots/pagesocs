@@ -44,6 +44,7 @@ twitter:
 #  error_mode: strict
 
 # Build settings
+<<<<<<< HEAD
 permalink: /:categories/:title/
 markdown: kramdown
 feed:
@@ -71,6 +72,31 @@ search_full_content: false # can have performance implications for large sites
 #   - vendor/cache/
 #   - vendor/gems/
 #   - vendor/ruby/
+=======
+# --------------
+#
+# If you wish to use the gem-version of Minima with or without a Gemfile, use
+#   the following setting:
+# theme: minima
+#
+# **OR** if you wish to use the theme directly from the GitHub repository by
+#   bypassing a Gemfile, use the following setting instead.
+#   It is best that you lock to a particular commit and update if uptream changes
+#   do not affect your site adversely.
+# remote_theme: jekyll/minima@d4d779a
+#
+# Minima requires the following plugins:
+# plugins:
+#  - jekyll-feed
+#  - jekyll-seo-tag
+#
+# Uncomment the following setting if you wish to disable deprecation warnings
+#   from newer versions of sass converter. Adapt as required.
+# sass:
+#   quiet_deps: true
+#   silence_deprecations: [import]
+incremental: true
+>>>>>>> ebd5887e15ee6344ab4e9836ebe9c3d6fd216a62
 
 plugins:
   - jekyll-remote-theme
@@ -90,6 +116,7 @@ defaults:
       layout: post
       share: true
 
+<<<<<<< HEAD
 # Site Author
 author:
   name:
@@ -106,3 +133,17 @@ footer_links:
   - title: Feed
     url: atom.xml
     icon: fas fa-rss-square
+=======
+minima:
+  skin: dark
+  social_links:
+    - { platform: github, user_url: "https://github.com/open-coding-society" }
+    - { platform: x, user_url: "https://x.com/Open_Coding" }
+    - { platform: youtube, user_url: "https://www.youtube.com/@OpenCodingSociety" } 
+  nav_pages:
+    - navigation/section/csse.md
+    - navigation/section/csp.md
+    - navigation/section/csa.md 
+    - navigation/blog.md
+    - navigation/search.md
+>>>>>>> ebd5887e15ee6344ab4e9836ebe9c3d6fd216a62
