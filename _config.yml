@@ -141,9 +141,6 @@ minima:
     - { platform: x, user_url: "https://x.com/Open_Coding" }
     - { platform: youtube, user_url: "https://www.youtube.com/@OpenCodingSociety" } 
   nav_pages:
-    - navigation/section/csse.md
-    - navigation/section/csp.md
-    - navigation/section/csa.md 
     - navigation/blog.md
     - navigation/search.md
 >>>>>>> ebd5887e15ee6344ab4e9836ebe9c3d6fd216a62
