@@ -1,22 +1,22 @@
 ---
 layout: post 
 tailwind: True
-title: Building a Computer Science Linkedin Profile
+title: West Coast Journey Through Code
 description: >
   Understand how to ideate, develop, and describe computer science projects for future career success!
-author: CSA 2025-26
+author: CSP 2025-26
 permalink: /west-coast
 lxdData:
   Title: "Learning Modules"
-  Description: "Build critical project development skills and earn a certificate upon completion!"
+  Description: "Learn important aspects of code while you travel across the west coast!"
   Topics:
     - Title: "C1: AI Itenerary"
       Genre: "Project Creation"
       Level: 1
       Description: "Learn how to develop blogs and projects that convey information effectively and are visually appealing"
-      Categories: ["Frontend", "HTML", "CSS","Javascript"]
+      Categories: ["AI", "Conext", "Prompting","Generation"]
       Video: "/west-coast/frontend-video"
-      Lessons: "/west-coast/frontend/"
+      Lessons: "/west-coast/ai/"
       Image: "/images/west-coast/frontend.svg"
       Alt: "CS Portfolio Quest Frontend"
     - Title: "C2: Food"
@@ -25,26 +25,25 @@ lxdData:
       Description: "Learn about database structures, types, and integration with frontend for real-world full-stack development"
       Categories: ["Backend", "Flask", "Spring", "Databases"]
       Video: "/west-coast/backend-video"
-      Lessons: "/west-coast/backend/"
+      Lessons: "/west-coast/food/"
       Image: "/images/west-coast/backend.svg"
       Alt: "CS Portfolio Quest Backend"
     - Title: "C3: Sports"
       Genre: "Practice"
       Level: 3
       Description: "Learn about how to visualize data from various sources for effective representation and application, such as machine learning"
-      Categories: ["Visualization", "ML", "Collation"]
+      Categories: ["API's", "Backend", "Databases"]
       Video: "/west-coast/data-viz-video"
-      Lessons: "/west-coast/data-viz/"
+      Lessons: "/west-coast/sports/"
       Image: "/images/west-coast/data-viz.svg"
       Alt: "CS Portfolio Quest Data Visualization"
     - Title: "C4: Travel"
-      Genre: "Application"
+      Genre: "User Interface"
       Level: 4
-      Description: "Learn to write about your CS projects for inclusion on your resume, both in technical and non-technical terms"
-      Categories: ["CV", "Resume", "Blogging"]
-      Video: "/west-coast/resume-video"
-      Lessons: "/west-coast/resume/"
+      Description: "Learn how to design and develop dynamic UI elements inspired by global destinations to enhance your creative journey."
+      Categories: ["UI", "Styling", "Structure"]
+      Lessons: "/west-coast/travel/"
       Image: "/images/west-coast/resume.svg"
       Alt: "CS Portfolio Quest Resume"
 ---
-{%- include tailwind/cs-portfolio-quest_info.html -%}
+{%- include tailwind/quests/west-coast.html -%}

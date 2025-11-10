@@ -1,68 +1,57 @@
 ---
-layout: post 
+layout: opencs
+microblog: True 
 tailwind: True
-title: Frontend Development Quest
+title: Travel Quest — Food Route
 description: >
-  Learn how to develop blogs and projects that convey information effectively and are visually appealing
-author: CSA 2025-26
-permalink: /west-coast/frontend/
+  🎒 Progressive road-trip learning: San Diego → LA → SF → Seattle. Build dishes, query menus, handle transactions, and master database cleanup through coastal cuisine adventures.
+author: Hope F.
+permalink: /west-coast/food/
 lxdData:
-  Title: "Frontend Development Modules"
-  Description: "Master frontend development skills through hands-on projects and earn certificates!"
-  Topics:
-    - Title: "Submodule 1"
-      Genre: "Project Creation"
-      Level: 1
-      Description: "Team-defined frontend development module"
-      Categories: ["Frontend", "HTML", "CSS", "Javascript"]
-      Video: "/west-coast/frontend/submodule_1-video"
-      Lessons: "/west-coast/frontend/submodule_1/"
-      Image: "/images/west-coast/frontend.svg"
-      Alt: "Frontend Submodule 1"
-    - Title: "Submodule 2"
-      Genre: "Project Creation"
-      Level: 2
-      Description: "Team-defined frontend development module"
-      Categories: ["Frontend", "HTML", "CSS", "Javascript"]
-      Video: "/west-coast/frontend/submodule_2-video"
-      Lessons: "/west-coast/frontend/submodule_2/"
-      Image: "/images/west-coast/frontend.svg"
-      Alt: "Frontend Submodule 2"
-    - Title: "Submodule 3"
-      Genre: "Project Creation"
-      Level: 3
-      Description: "Team-defined frontend development module"
-      Categories: ["Frontend", "HTML", "CSS", "Javascript"]
-      Video: "/west-coast/frontend/submodule_3-video"
-      Lessons: "/west-coast/frontend/submodule_3/"
-      Image: "/images/west-coast/frontend.svg"
-      Alt: "Frontend Submodule 3"
-    - Title: "Submodule 4"
-      Genre: "Project Creation"
-      Level: 4
-      Description: "Team-defined frontend development module"
-      Categories: ["Frontend", "HTML", "CSS", "Javascript"]
-      Video: "/west-coast/frontend/submodule_4-video"
-      Lessons: "/west-coast/frontend/submodule_4/"
-      Image: "/images/west-coast/frontend.svg"
-      Alt: "Frontend Submodule 4"
-    - Title: "Submodule 5"
-      Genre: "Project Creation"
-      Level: 5
-      Description: "Team-defined frontend development module"
-      Categories: ["Frontend", "HTML", "CSS", "Javascript"]
-      Video: "/west-coast/frontend/submodule_5-video"
-      Lessons: "/west-coast/frontend/submodule_5/"
-      Image: "/images/west-coast/frontend.svg"
-      Alt: "Frontend Submodule 5"
-    - Title: "Submodule 6"
-      Genre: "Project Creation"
-      Level: 6
-      Description: "Team-defined frontend development module"
-      Categories: ["Frontend", "HTML", "CSS", "Javascript"]
-      Video: "/west-coast/frontend/submodule_6-video"
-      Lessons: "/west-coast/frontend/submodule_6/"
-      Image: "/images/west-coast/frontend.svg"
-      Alt: "Frontend Submodule 6"
+  Title: "🍕 Food Route — Back-End & Databases"
+  Description: "Progressive road-trip learning: build dishes, query menus, handle transactions, and master database cleanup through coastal cuisine adventures."
+  XP_System:
+    Total_Available: 500
+    Badges: ["First Insert", "Query Master", "Transactional Pro", "Cleanup Crew"]
+  Cities:
+    - Name: "San Diego"
+      Icon: "☀️"  
+      Image: "/images/SD.jpg"  
+      Theme: "Yellow & Surfboard"
+      Unlocked: true
+      Description: "Fresh ingredients meet database creation. Build your first dishes by learning INSERT operations and data modeling."
+      Challenge: "CREATE: Build the Baja Bowl - Design dish records and ingredient relationships"
+      Analogy: "The database is your kitchen pantry — organize ingredients (fields) and recipes (records) so chefs (applications) can cook reliably."
+      XP_Reward: 100
+    - Name: "Los Angeles"
+      Icon: "🌴"
+      Image: "/images/LA.jpg" 
+      Theme: "Pastel Neon & Taco Truck"
+      Unlocked: false
+      Description: "Food truck paradise! Learn to search, filter, and efficiently query your growing database of dishes."
+      Challenge: "READ: Food Truck Tasting - Master filtering, search, and performance optimization"
+      Analogy: "Think of querying like being a food critic — you need to find exactly what you're looking for quickly in a sea of options."
+      XP_Reward: 100
+      Unlock_Condition: "Complete San Diego activities"
+    - Name: "San Francisco"
+      Icon: "🌁"
+      Image: "/images/SF.jpg"  
+      Theme: "Foggy Blue & Sourdough"
+      Unlocked: false
+      Description: "Gourmet pop-up kitchen! Master updating records safely with transactions and conflict resolution."
+      Challenge: "UPDATE: Gourmet Pop-Up - Handle menu changes, conflicts, and maintain data consistency"
+      Analogy: "Updating data is like editing a shared recipe — you need to handle conflicts when multiple chefs want to make changes."
+      XP_Reward: 150
+      Unlock_Condition: "Complete Los Angeles activities"
+    - Name: "Seattle"
+      Icon: "🌲"
+      Image: "/images/SEA.jpg"  
+      Theme: "Teal & Salmon"
+      Unlocked: false
+      Description: "Sustainable cleanup and analytics! Master deletion strategies and build insightful reports from your data."
+      Challenge: "DELETE & ANALYZE: Sustainable Cleanup - Implement archival strategies and generate analytics"
+      Analogy: "Managing data lifecycle is like sustainable cooking — sometimes you preserve ingredients, sometimes you compost them."
+      XP_Reward: 150
+      Unlock_Condition: "Complete San Francisco activities"
 ---
-{%- include tailwind/cs-portfolio-quest_info.html -%}
+{%- include tailwind/quests/west-coast-food.html -%}

@@ -98,6 +98,10 @@ search_full_content: false # can have performance implications for large sites
 incremental: true
 >>>>>>> ebd5887e15ee6344ab4e9836ebe9c3d6fd216a62
 
+<<<<<<< HEAD
+=======
+remote_theme: jekyll/minima
+>>>>>>> 3b72ecc8abf749d611941371650792f87531854c
 plugins:
   - jekyll-remote-theme
   - jekyll-include-cache
