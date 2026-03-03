@@ -10,8 +10,8 @@ permalink: /digital-famine/planets
 </div>
 
 <script type="module">
-    // Adnventure Game assets locations
-    import Game from "{{site.baseurl}}/assets/js/adventureGame/GameEngine/Game.js";
+    import Core from "{{site.baseurl}}/assets/js/GameEnginev1.5/Game.js";
+    import GameControl from "{{site.baseurl}}/assets/js/GameEnginev1.5/GameControl.js";
     import GameLevelHomePage from "{{site.baseurl}}/assets/js/digitalFamine/GameLevelHomePage.js";
     import { pythonURI, javaURI, fetchOptions } from '{{site.baseurl}}/assets/js/api/config.js';
 
@@ -26,6 +26,6 @@ permalink: /digital-famine/planets
         gameLevelClasses: [GameLevelHomePage]
 
     }
-    // Launch Adventure Game
-    Game.main(environment);
+    // Launch Adventure Game using the central core and adventure GameControl
+    Core.main(environment, GameControl);
 </script>

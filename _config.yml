@@ -40,8 +40,22 @@ disqus:
 twitter:
   username: # site's Twitter username, e.g. "mmistakes"
 
+<<<<<<< HEAD
 # Liquid
 #  error_mode: strict
+=======
+# Exclude from Jekyll watch - these are processed by our conversion scripts
+# This prevents double-regeneration when saving notebooks/docx files
+exclude:
+# Jekyll defaults
+  - vendor
+# Custom excludes
+  - Makefile
+  - _notebooks
+  - _docx
+  - venv
+
+>>>>>>> 82996ee0815317138c543efd5deb77a734a890c2
 
 # Build settings
 <<<<<<< HEAD
@@ -146,5 +160,12 @@ minima:
     - { platform: youtube, user_url: "https://www.youtube.com/@OpenCodingSociety" } 
   nav_pages:
     - navigation/blog.md
+<<<<<<< HEAD
     - navigation/search.md
 >>>>>>> ebd5887e15ee6344ab4e9836ebe9c3d6fd216a62
+=======
+    - navigation/courses.md
+    - navigation/search.md
+
+gemini_api_key: AIzaSyBWEz5qHeWx5buC4I4dZ2fllaMk3z8k_-w
+>>>>>>> 82996ee0815317138c543efd5deb77a734a890c2

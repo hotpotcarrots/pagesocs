@@ -1,5 +1,7 @@
 # Introduction
 
+Founded and maintained by John Mortensen.
+
 Open Coding Society `Pages` is a project designed to support students in their Computer Science and Software Engineering education. It offers a wide range of resources including tech talks, code examples, and educational blogs.
 
 This GitHub Pages repository can be customized by the blogger to support computer science learning as the student works through the pathways of using Javascript, Python/Flask, Java/Spring. It is intended to support course work for Computer Science and Software Engineering (CSSE), AP Computer Science Principles (APCSP or CSP), and AP Computer Science 'A' (APCSA, or CSA).
@@ -34,6 +36,7 @@ The Apache license has its roots in Fastpages.  Thus, it carries that license fo
 - **Code Examples**: Provides practical coding examples in JavaScript, including a platformer game, and frontend code for user databases using Python and Java backends.
 - **Educational Blogs**: Offers instructional content on various topics such as developer tools setup, deployment on AWS, SQL databases, machine learning, and data structures. It utilizes Jupyter Notebooks for interactive lessons and coding challenges, often referred to as `hacks`.
 - **Tools and Integrations**: Features GitHub actions for blog publishing, Utterances for blog commenting, local development support via Makefile and scripts, and styling with the Minima Theme and SASS. It also includes an Agile Toolkit to assist in Student Teaching, Assignment Tracking, Live Reviews, and more.
+- **Keyboard Shortcuts**: Pages supports keyboard shortcuts using `Alt+Shift+key` (e.g. `Alt+Shift+C` for calendar, `Alt+Shift+H` for home, `Alt+Shift+S` for student toolkit). Press `Alt+Shift+?` to see all shortcuts. These use a non-conflicting modifier so browser defaults (copy, save, print, etc.) are unaffected.
 
 ### Contributions
 

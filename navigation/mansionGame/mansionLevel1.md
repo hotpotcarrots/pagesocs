@@ -5,15 +5,16 @@ permalink: /gamify/mansion1
 microblog: true
 ---
 
-<div id="gameContainer">
+<div id="gameContainer" style="position: relative;">
     <div id="promptDropDown" class="promptDropDown" style="z-index: 9999"></div>
     <canvas id='gameCanvas'></canvas>
 </div>
 
 <script type="module">
-    // Adventure Game assets locations
-    import Game from "{{site.baseurl}}/assets/js/mansionGame/GameEngine/Game.js";
-    import { initCheats } from "{{site.baseurl}}/assets/js/mansionGame/GameEngine/cheats.js";
+    // Mansion Game assets locations (use central core + GameControl)
+    import Core from "{{site.baseurl}}/assets/js/mansionGame/MansionLogic/Game.js";
+    import GameControl from "{{site.baseurl}}/assets/js/mansionGame/GameControl.js";
+    import { initCheats } from "{{site.baseurl}}/assets/js/mansionGame/cheats.js";
     import GameLevel1 from "{{site.baseurl}}/assets/js/mansionGame/mansionLevel1.js";
     import GameLevel2 from "{{site.baseurl}}/assets/js/mansionGame/mansionLevel2.js";
     import { pythonURI, javaURI, fetchOptions } from '{{site.baseurl}}/assets/js/api/config.js';
@@ -30,8 +31,8 @@ microblog: true
         gameLevelClasses: [GameLevel1, GameLevel2]
 
     }
-    // Launch Adventure Game
-    const game = Game.main(environment);
+    // Launch Mansion Game using the central core and mansion GameControl
+    const game = Core.main(environment, GameControl);
     
     // Initialize cheats/navigation buttons
     initCheats(game);

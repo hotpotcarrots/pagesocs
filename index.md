@@ -1,255 +1,319 @@
 ---
 layout: post 
+feedback: true
+hide: true
 title: Open Coding Society
 description: An Open Pathway to Computer Science
 sprite: /images/mario_animation.png
 permalink: /
-microblog: true
-hide: true
 ---
 
-<!-- Liquid:  statements-->
+<!-- ================= LIQUID SETUP ================= -->
 
-<!--- Concatenation of site URL to frontmatter sprite  --->
 {% assign sprite_file = site.baseurl | append: page.sprite %}
-<!--- Has is a list variable containing mario metadata for sprite --->
-{% assign hash = site.data.mario_metadata %}  
-<!--- Size width/height of Sprit images --->
+{% assign hash = site.data.mario_metadata %}
 {% assign pixels = 256 %}
 
-<!--- HTML for page contains <p> tag named "Mario" and class properties for a "sprite"  -->
+<!-- ================= GAME ELEMENTS ================= -->
 
 <p id="mario" class="sprite"></p>
-  
-<!--- Embedded Cascading Style Sheet (CSS) rules, 
-        define how HTML elements look 
---->
-<style>
+<canvas id="fog"></canvas>
 
-  /*CSS style rules for the id and class of the sprite...
-  */
+<!-- Mobile Controls -->
+<div id="controls">
+  <button data-dir="up">▲</button>
+  <div class="middle">
+    <button data-dir="left">◀</button>
+    <button data-dir="down">▼</button>
+    <button data-dir="right">▶</button>
+  </div>
+</div>
+
+<!-- ================= STYLES ================= -->
+
+<style>
+body {
+  background-color: black;
+}
+
+/* Prevent touch behavior only on game elements */
+#mario,
+#controls,
+#controls button {
+  touch-action: none;
+}
+
+
   .sprite {
     height: {{pixels}}px;
     width: {{pixels}}px;
     background-image: url('{{sprite_file}}');
     background-repeat: no-repeat;
+    position: absolute;
+    z-index: 1001;
   }
 
-  /*background position of sprite element
-  */
   #mario {
-    background-position: calc({{animations[0].col}} * {{pixels}} * -1px) calc({{animations[0].row}} * {{pixels}}* -1px);
+    background-position: 0 0;
+  }
+
+  #fog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    pointer-events: none;
+    z-index: 999;
   }
 
   .social-icon {
     filter: invert(1);
   }
+
+  /* ================= MOBILE CONTROLS ================= */
+
+  #controls {
+    position: fixed;
+    bottom: 20px;
+    left: 20px;
+    z-index: 2000;
+    user-select: none;
+  }
+
+  #controls .middle {
+    display: flex;
+    justify-content: center;
+  }
+
+  #controls button {
+    width: 60px;
+    height: 60px;
+    margin: 6px;
+    font-size: 24px;
+    border-radius: 12px;
+    border: none;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    backdrop-filter: blur(6px);
+  }
+
+  #controls button:active {
+    background: rgba(255, 255, 255, 0.35);
+  }
+  #controls {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  #controls {
+    display: block;
+  }
+}
+
 </style>
 
-<!--- Embedded executable code--->
+<!-- ================= GAME SCRIPT ================= -->
+
 <script>
-  ////////// convert YML hash to javascript key:value objects /////////
+  //////////////////// METADATA ////////////////////
 
-  var mario_metadata = {}; //key, value object
-  {% for key in hash %}  
-  
-  var key = "{{key | first}}"  //key
-  var values = {} //values object
-  values["row"] = {{key.row}}
-  values["col"] = {{key.col}}
-  values["frames"] = {{key.frames}}
-  mario_metadata[key] = values; //key with values added
-
+  var mario_metadata = {};
+  {% for key in hash %}
+  mario_metadata["{{key | first}}"] = {
+    row: {{key.row}},
+    col: {{key.col}},
+    frames: {{key.frames}}
+  };
   {% endfor %}
 
-  ////////// game object for player /////////
+  //////////////////// FOG OF WAR ////////////////////
+
+  const fogCanvas = document.getElementById("fog");
+  const fogCtx = fogCanvas.getContext("2d");
+
+  function resizeFog() {
+    fogCanvas.width = window.innerWidth;
+    fogCanvas.height = window.innerHeight;
+    fogCtx.fillStyle = "rgba(0,0,0,0.6)";
+    fogCtx.fillRect(0, 0, fogCanvas.width, fogCanvas.height);
+  }
+
+  window.addEventListener("resize", resizeFog);
+
+  //////////////////// MARIO CLASS ////////////////////
 
   class Mario {
-    constructor(meta_data) {
-      this.tID = null;  //capture setInterval() task ID
-      this.positionX = 0;  // current position of sprite in X direction
-      this.currentSpeed = 0;
-      this.marioElement = document.getElementById("mario"); //HTML element of sprite
-      this.pixels = {{pixels}}; //pixel offset of images in the sprite, set by liquid constant
-      this.interval = 100; //animation time interval
-      this.obj = meta_data;
-      this.marioElement.style.position = "absolute";
+    constructor(meta) {
+      this.meta = meta;
+      this.el = document.getElementById("mario");
+      this.pixels = {{pixels}};
+      this.positionX = 0;
+      this.positionY = 200;
+      this.frame = 0;
+      this.interval = 16;
+      this.timer = null;
     }
 
-    animate(obj, speed) {
-      let frame = 0;
-      const row = obj.row * this.pixels;
-      this.currentSpeed = speed;
+    animate(state, dx, dy) {
+      this.stop();
+      const row = state.row * this.pixels;
 
-      this.tID = setInterval(() => {
-        const col = (frame + obj.col) * this.pixels;
-        this.marioElement.style.backgroundPosition = `-${col}px -${row}px`;
-        this.marioElement.style.left = `${this.positionX}px`;
+      this.timer = setInterval(() => {
+        const col = (this.frame + state.col) * this.pixels;
+        this.el.style.backgroundPosition = `-${col}px -${row}px`;
 
-        this.positionX += speed;
-        frame = (frame + 1) % obj.frames;
+        this.positionX += dx;
+        this.positionY += dy;
 
-        const viewportWidth = window.innerWidth;
-        if (this.positionX > viewportWidth - this.pixels) {
-          document.documentElement.scrollLeft = this.positionX - viewportWidth + this.pixels;
-        }
+        this.el.style.left = `${this.positionX}px`;
+        this.el.style.top = `${this.positionY}px`;
+
+        this.frame = (this.frame + 1) % state.frames;
+
+        const rect = this.el.getBoundingClientRect();
+        hole.cx = rect.left + rect.width / 2;
+        hole.cy = rect.top + rect.height / 2;
       }, this.interval);
     }
 
-    startWalking() {
-      this.stopAnimate();
-      this.animate(this.obj["Walk"], 3);
+    stop() {
+      clearInterval(this.timer);
     }
 
-    startWalkingL() {
-      this.stopAnimate();
-      this.animate(this.obj["WalkL"], -3);
-    }
-
-    startRunning() {
-      this.stopAnimate();
-      this.animate(this.obj["Run1"], 6);
-    }
-
-    startRunningL() {
-      this.stopAnimate();
-      this.animate(this.obj["Run1L"], -6);
-    }
-
-    startPuffing() {
-      this.stopAnimate();
-      this.animate(this.obj["Puff"], 0);
-    }
-
-    startPuffingL() {
-      this.stopAnimate();
-      this.animate(this.obj["PuffL"], 0);
-    }
-
-    startCheering() {
-      this.stopAnimate();
-      this.animate(this.obj["Cheer"], 0);
-    }
-
-    startCheeringL() {
-      this.stopAnimate();
-      this.animate(this.obj["CheerL"], 0);
-    }
-
-    startFlipping() {
-      this.stopAnimate();
-      this.animate(this.obj["Flip"], 0);
-    }
-
-    startFlippingL() {
-      this.stopAnimate();
-      this.animate(this.obj["FlipL"], 0);
-    }
-
-    startResting() {
-      this.stopAnimate();
-      this.animate(this.obj["Rest"], 0);
-    }
-
-    startRestingL() {
-      this.stopAnimate();
-      this.animate(this.obj["RestL"], 0);
-    }
-
-    stopAnimate() {
-      clearInterval(this.tID);
+    start(name, dx = 0, dy = 0) {
+      this.animate(this.meta[name], dx, dy);
     }
   }
 
   const mario = new Mario(mario_metadata);
 
-  ////////// event control /////////
+  //////////////////// FOG HOLE ////////////////////
 
-// Add event listener for keydown events
-  window.addEventListener("keydown", (event) => {
-      const activeElement = document.activeElement;
-      const isTyping = activeElement.tagName === "INPUT" || activeElement.tagName === "TEXTAREA";
-      if (isTyping) return; // ✅ Skip game controls while typing in forms
+  const hole = {
+    cx: 0,
+    cy: 0,
+    radius: 0,
+    targetRadius: 0,
+    expanding: false,
+    startTime: null,
+    duration: 6000
+  };
 
-      if (event.key === "ArrowRight" || event.key === "d" || event.key === "D") {
-          event.preventDefault();
-          if (event.repeat) {
-              mario.startCheering();
-          } else {
-              if (mario.currentSpeed === 0) {
-                  mario.startWalking();
-              } else if (mario.currentSpeed === 3) {
-                  mario.startRunning();
-              }
-          }
-      } else if (event.key === "ArrowLeft" || event.key === "a" || event.key === "A") {
-          event.preventDefault();
-          if (event.repeat) {
-              mario.startCheeringL();
-          } else {
-              if (mario.currentSpeed === 0) {
-                  mario.startWalkingL();
-              } else if (mario.currentSpeed === 3) {
-                  mario.startRunningL();
-              }
-          }
-      } else if (event.key === "ArrowUp" || event.key === "w" || event.key === "W") {
-          event.preventDefault();
-          mario.startFlipping();
-      } else if (event.key === "ArrowDown" || event.key === "s" || event.key === "S") {
-          event.preventDefault();
-          mario.startResting();
-      }
-  });
-  
-  // Add event listener for touchstart events
-  window.addEventListener("touchstart", (event) => {
-      event.preventDefault(); // prevent default browser action
-      const touchX = event.touches[0].clientX;
-      const screenWidth = window.innerWidth;
-      const centerThreshold = screenWidth * 0.1; // 10% of the screen width on either side of the center
+  function drawFogWithHole() {
+    fogCtx.globalCompositeOperation = 'source-over';
+    fogCtx.fillStyle = 'rgba(0,0,0,0.6)';
+    fogCtx.fillRect(0, 0, fogCanvas.width, fogCanvas.height);
 
-      if (touchX > screenWidth / 2 + centerThreshold) {
-          // move right
-          if (mario.currentSpeed === 0) {
-              mario.startWalking();
-          } else if (mario.currentSpeed === 3) {
-              mario.startRunning();
-          }
-      } else if (touchX < screenWidth / 2 - centerThreshold) {
-          // move left
-          if (mario.currentSpeed === 0) {
-              mario.startWalkingL();
-          } else if (mario.currentSpeed === 3) {
-              mario.startRunningL();
-          }
-      } else {
-          // touch near the center, make Mario puff
-          mario.startPuffing();
-      }
-  });
+    const grad = fogCtx.createRadialGradient(
+      hole.cx, hole.cy, hole.radius * 0.2,
+      hole.cx, hole.cy, hole.radius
+    );
 
-  //stop animation on window blur
-  window.addEventListener("blur", () => {
-    mario.stopAnimate();
-  });
+    grad.addColorStop(0, 'rgba(0,0,0,1)');
+    grad.addColorStop(1, 'rgba(0,0,0,0)');
 
-  //start animation on window focus
-  window.addEventListener("focus", () => {
-     mario.startFlipping();
+    fogCtx.globalCompositeOperation = 'destination-out';
+    fogCtx.fillStyle = grad;
+    fogCtx.fillRect(0, 0, fogCanvas.width, fogCanvas.height);
+    fogCtx.globalCompositeOperation = 'source-over';
+  }
+
+  function animateFog(ts) {
+    if (!hole.startTime) hole.startTime = ts;
+    const p = Math.min(1, (ts - hole.startTime) / hole.duration);
+    hole.radius = hole.targetRadius * p;
+    drawFogWithHole();
+    if (p < 1) requestAnimationFrame(animateFog);
+    else fogCanvas.style.display = 'none';
+  }
+
+  //////////////////// INPUT (KEYBOARD + TOUCH) ////////////////////
+
+  const keys = { left: false, right: false, up: false, down: false };
+
+  function updateMovement() {
+    const dx = (keys.right ? 5 : 0) + (keys.left ? -5 : 0);
+    const dy = (keys.down ? 5 : 0) + (keys.up ? -5 : 0);
+
+    if (!dx && !dy) {
+      mario.stop();
+      return;
+    }
+
+    mario.start(keys.left && !keys.right ? "WalkL" : "Walk", dx, dy);
+  }
+
+  window.addEventListener("keydown", e => {
+    switch (e.key.toLowerCase()) {
+      case "a":
+      case "arrowleft": keys.left = true; break;
+      case "d":
+      case "arrowright": keys.right = true; break;
+      case "w":
+      case "arrowup": keys.up = true; break;
+      case "s":
+      case "arrowdown": keys.down = true; break;
+    }
+    updateMovement();
   });
 
-  //start animation on page load or page refresh
+  window.addEventListener("keyup", e => {
+    switch (e.key.toLowerCase()) {
+      case "a":
+      case "arrowleft": keys.left = false; break;
+      case "d":
+      case "arrowright": keys.right = false; break;
+      case "w":
+      case "arrowup": keys.up = false; break;
+      case "s":
+      case "arrowdown": keys.down = false; break;
+    }
+    updateMovement();
+  });
+
+document.querySelectorAll("#controls button").forEach(btn => {
+  const dir = btn.dataset.dir;
+
+  btn.addEventListener("pointerdown", e => {
+    e.preventDefault();
+    keys[dir] = true;
+    updateMovement();
+  });
+
+  btn.addEventListener("pointerup", () => {
+    keys[dir] = false;
+    updateMovement();
+  });
+
+  btn.addEventListener("pointercancel", () => {
+    keys[dir] = false;
+    updateMovement();
+  });
+
+  btn.addEventListener("pointerleave", () => {
+    keys[dir] = false;
+    updateMovement();
+  });
+});
+
+
+  //////////////////// INIT ////////////////////
+
   document.addEventListener("DOMContentLoaded", () => {
-    // adjust sprite size for high pixel density devices
-    const scale = window.devicePixelRatio;
-    const sprite = document.querySelector(".sprite");
-    sprite.style.transform = `scale(${0.2 * scale})`;
-    mario.startResting();
-  });
+    resizeFog();
+    mario.el.style.transform = `scale(${0.2 * (window.devicePixelRatio || 1)})`;
+    mario.start("Rest");
 
+    const rect = mario.el.getBoundingClientRect();
+    hole.cx = rect.left + rect.width / 2;
+    hole.cy = rect.top + rect.height / 2;
+    hole.targetRadius = Math.hypot(fogCanvas.width, fogCanvas.height);
+    requestAnimationFrame(animateFog);
+  });
 </script>
 
+<!-- ================= PAGE CONTENT ================= -->
 ## About
 
 Empower yourself to solve real-world problems, unlock creativity, and open doors to every field—because coding is the language of innovation.
@@ -291,47 +355,54 @@ Empower yourself to solve real-world problems, unlock creativity, and open doors
   </div>
 </div>
 
-## Project-based learning
+### Project-based learning (PBL)
 
-Instructor created projects, project requirements, technical materials, and support.
+> Conventional learning, such as tests, is used only for diagnostic purposes, allowing students to make corrections before grading. In AP or Articulated courses, tests are also used to establish standing against College Board or community college requirements.
 
-> Grades are based on projects, time invested, engagement, learned concepts, participation with peers, and live reviews between student(s) and instructor.
+In PBL, student progress and understanding are assessed continuously through project checkpoints, analytics, teacher observation, and verbal discussions, both individually and within teams.
 
-- Performing Agile/Scrum development
-- Coding, frontend, backend, devops, version control, and using algorithmic thinking
-- Creativity, research, design, data structures, and utilizing ChatGPT
-- Performing teamwork, team communication and collaboration, peer reviews/grading
-- Focus on technical communications through project presentations and student-led teaching
+Learning begins with instructor-created materials, including schema foundations, project-starter code, project requirements, and ongoing support.
+
+Student grades are primarily based on project work, time invested, engagement, learned concepts, participation with peers, project analytics, and live reviews between student(s) and instructor.
+
+These are sample indicators of success:
+
+- Performing Agile/Scrum methodologies to promote iterative improvement  
+- Coding, frontend, backend, DevOps, version control, and algorithmic thinking  
+- Creativity, research, design, data structures, and responsible use of AI  
+- Teamwork, communication, collaboration, and peer reviews/grading  
+- Technical communication through project presentations and student-led teaching
 
 ### Time Breakdown
 
 Instructor is extremely focused on work, routines, and culture established in the classroom.
 
-> If individuals, groups and teams, and classroom are effective with class time, homework will not be assigned.
+> If individuals, groups, and teams use class time effectively, homework will generally not be assigned.
 
 - Learning objectives are scheduled over a Sprint
-- Sprints last 2–4 weeks.
-- Classroom work is 4+ hours per week.
-  - Do not waste time opportunities given.
-  - Balance technical time and collaboration time.
-- Homework is 1–2 hours per week.  
-  - Review materials discussed in class.
-  - Mentally prep for next day (ie update issues or kanban).
-  - Extra prep should be considered for live reviews.
+- Sprints last 2–4 weeks
+- Classroom work is 4+ hours per week, including weeks with Pro-Grow, Parent Conferences, or other shortened school instruction time.
+  - Make the most of every opportunity in class
+  - Balance technical work with collaboration and team activities
+- Homework can be 1–2 hours per week, primarily to prepare for classroom and team work
+  - Review materials discussed in class
+  - Mentally prepare for the next day (e.g., update issues or Kanban)
+  - Complete additional preparation if you miss class, fall behind, or have upcoming live reviews
 
 ### Make-up Policy
 
 Instructor believes absences disrupt work culture and routines.
 
-- Communicate absence beforehand with the instructor and team members.
-- Make a make-up plan and try to recreate situation missed.
+- Communicate absences in advance with the instructor and team members
+- Make a plan to recreate the situation or work missed in class
+- Do not disrupt class to make up missed work; be responsible by coordinating with peers or the instructor during office hours
 
-> Instructor believes student is supposed to be in class.  Similar to how an employee is expected to be at work.
+> Students are expected to be in class, similar to workplace expectations.
 
-- Make-up work is challenging for everyone—not just the person who missed class.
-- Time lost in class is extremely hard to make up, since individuals are working with team members, team teaching lessons to the class, or performing live reviews with the teacher.
-- Instructor has freedom to adjust instruction during the week according to needs of classroom.  
-- Modalities of instruction, for various learning styles, do not stick to published materials only.
+- Make-up work is challenging for everyone, not just the student who missed class
+- Time lost in class is difficult to recover, since individuals work closely with teams, lead lessons, or participate in live reviews
+- The instructor reserves the right to adjust instruction during the week according to classroom needs; the schedule is typically adjusted week by week
+- Modalities of instruction are flexible to support different learning styles and may go beyond published materials
 
 ![ccr]({{site.baseurl}}/images/course-brag/ccr.png)
 
@@ -339,7 +410,7 @@ Instructor believes absences disrupt work culture and routines.
 
 CSSE 1,2 prepares students for the AP Computer Science pathway. This course focuses on teaching the JavaScript programming language, object-oriented programming and inheritance, and developing algorithmic thinking skills.
 
-> Through game development projects, students will engage in engineering skills, learn fundamentals of programming, work with data structures, and foster collaboration skills with their peers. Tech talks will be conducted by teachers to introduce concepts, provide guidance on tools, and support ideas to establish development requirements. By performing development and exploration, this course aims to raise students' awareness of the tremendous capabilities of computers and software engineering skills across various fields.
+> Through game development projects, students will engage in engineering skills, learn fundamentals of programming, work with data structures, and foster collaboration skills with their peers. Tech talks conducted by teachers and students introduce concepts, provide guidance on tools, and support ideas to establish development requirements. By performing development and exploration, this course raises students' awareness of the tremendous capabilities of computers and software engineering skills across various fields.
 
 - Prerequisites: None
 - Meets UC/CSU G requirements
@@ -351,270 +422,65 @@ CSSE 1,2 prepares students for the AP Computer Science pathway. This course focu
 
 Computer Science Principles is designed as a college-level introduction to computer science. The AP Computer Science Principles curriculum is integrated into this course, covering creative development, data, algorithms and programming, computer systems and networks, and the impact of computing.
 
-> Students will work on individual and team projects to build computer systems, write algorithms, analyze for correctness, and engage in discussions about solutions. The course will establish fluency in Python, utilize prerequisite knowledge in JavaScript, and develop fluency in Linux.
+> Students work on individual and team projects to build computer systems, write algorithms, analyze for correctness, and engage in discussions about solutions. The course establishes fluency in Python, utilizes prerequisite knowledge in JavaScript, and develops fluency in Linux.
 
 - Prerequisites:
   - Rising 10th graders: Computer Science and Software Engineering (CSSE)
-  - Rising 11th-12th graders: GPA above 3.5 and expectation of experience with JavaScript or other programming languages
-- Meets UC/CSU G requirements, also an alternate for 3rd year D requirement
+  - Rising 11th–12th graders: GPA above 3.5 and prior experience with JavaScript or other programming languages, including familiarity with version control using GitHub, basic Linux command-line operations, and development in VSCode or a similar IDE.
+  - Meets UC/CSU G requirements, also an alternate for 3rd year D requirement
 
-> Data Structures 1 serves as the third trimester for the Computer Science Principles course. It is the capstone for non-computer science majors/minors and prepares other students to complete the PUSD computer science pathway. Data Structures 1 focuses on creating computer programs independently and includes AP review and AP project time. The course utilizes JavaScript and Python languages to instruct on the imperative and object-oriented programming paradigms. Topics covered include graphical user interfaces, input and output, lists, dictionaries, databases, searching, sorting, and algorithm analysis.
+> Data Structures 1 serves as the third trimester for the Computer Science Principles course. It is the capstone for non-computer science majors/minors and prepares other students to complete the PUSD computer science pathway. Data Structures 1 focuses on creating computer projects in small groups, with the instructor serving as a guide rather than a director, and includes AP review and AP project time.
 
-- Prerequisites: AP Computer Science Principles 1,2
+Through Open Coding Society–supported project guidelines and tracking, students engage in authentic educational or technical projects that may include industry- or community-informed problem contexts, as available. Projects emphasize iterative development using principles from **agile-scrum methodologies** and **design-based research**, with multiple refinement cycles leading to a functional prototype suitable for a business client, educational use, or contribution to Open Coding Society initiatives.
+
+The course utilizes **JavaScript and Python languages, the Flask framework and supporting libraries, SQL databases, and object-oriented programming paradigms**. Topics covered include graphical user interfaces, input and output, lists, dictionaries, databases, searching, sorting, and algorithm analysis.
+
+- Prerequisites: AP Computer Science Principles 1,2; Data Structures 1
 - Meets UC/CSU G requirements
 
 ![csp]({{site.baseurl}}/images/course-brag/csp24.png)
 
 ## Computer Science "A" 1,2 and Data Structures 2; Grades 11-12
 
-AP Computer Science A is an in-depth course that focuses on programming, algorithms, and data structures. The AP Computer Science 'A' curriculum is integrated into this course, which covers the Java programming language and topics such as fundamentals of programming, using objects, writing classes, arrays, array lists, 2D arrays, inheritance, and recursion.
+AP Computer Science A is an in-depth course focusing on programming, algorithms, and data structures. The AP Computer Science 'A' curriculum is integrated into this course, covering the Java programming language and topics such as fundamentals of programming, using objects, writing classes, arrays, array lists, 2D arrays, inheritance, and recursion.
 
-> Students will gain understanding through analysis, coding, and individual and team projects. The course will establish fluency in Java, utilize JavaScript, and work with Linux.
+> Students gain understanding through analysis, coding, and individual and team projects. The course establishes fluency in Java, builds on JavaScript skills, and incorporates Linux usage.
 
-- Prerequisites: a rising 11th or 12th grader
+- **Prerequisites:** Rising 11th or 12th grader
   - AP Computer Science Principles 1,2 and Data Structures 1
-  - Or a teacher recommendation with an expectation of understanding JavaScript, OOP, Linux, and Data Structures; foundation in team projects, awareness of agile methodology and GitHub source control.
+  - Or teacher recommendation, with expectation of understanding JavaScript, Python, OOP, Linux, and Data Structures; foundation in team projects, awareness of agile methodology, design-based research, and GitHub source control
 - Meets UC/CSU G requirements, also an alternate for 4th year C requirement
 
-> Data Structures 2 serves as the third trimester for the Computer Science "A" course and is the capstone for the Del Norte Computer Science Pathway. It is designed as a companion to AP Computer Science 'A'. This course focuses on basic data structures, algorithms, and includes AP preparation for College Board multiple-choice questions (MCQs) and free-response questions (FRQs). The course utilizes the JavaScript and Java languages to instruct on object-oriented programming paradigm programming and design. Topics covered include searching, sorting, hashing, algorithm analysis, collections, lists, stacks, queues, trees, sets, dictionaries, and graphs. The course concludes with team-oriented project-based learning and a final project.
+> Data Structures 2 serves as the third trimester for the Computer Science “A” course and is the **course-level capstone** for AP Computer Science A. This course builds directly on previously defined pathway knowledge, **advancing former personal or group ideas** into more robust systems guided by clearer requirements, enhanced algorithmic solutions, and testing for performance, reliability, and reuse. In parallel, the course includes AP preparation for College Board multiple-choice questions (MCQs) and free-response questions (FRQs).
 
-- Prerequisites: AP Computer Science ‘A’ 1,2
-- Meets UC/CSU G requirements
+Through Open Coding Society–supported project guidelines and tracking, teams define, refine, and extend prior work to address sponsor-informed or system-defined requirements, as available. Projects may advance a prototype in response to **direct stakeholder feedback**, support production services, or contribute to a deployed system or Open Coding Society initiative. These projects emphasize **technology growth, authentic problems, and meaningful stakeholder engagement**.
+
+The course utilizes **Java with the Spring framework**, with the option to also use **Python with Flask**, or combine both environments as appropriate, to instruct object-oriented programming, system design, and abstraction. Topics covered include searching, sorting, hashing, algorithm analysis, collections, lists, stacks, queues, trees, sets, dictionaries, and graphs.
+
+- Prerequisites: AP Computer Science ‘A’ 1,2  
+- Meets UC/CSU G requirements  
 - Data Structures 1,2 receives Articulated College Credit to Mira Costa CC for "CS 113: Basic Data Structures and Algorithms". Mira Costa CC requires and provides free registration to receive UC college credit.
 
 ![csa]({{site.baseurl}}/images/course-brag/csa24.png)
 
-<!-- Feedback Button + Modal -->
-<!-- Feedback Button + Modal -->
-<style>
-  #feedback-btn {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    background-color: #2563eb;
-    color: white;
-    border: none;
-    border-radius: 9999px;
-    padding: 12px 20px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-    transition: background-color 0.2s ease-in-out;
-    z-index: 1000;
-  }
+## Computer Science "H" 1,2 (12th grade)
 
-  #feedback-btn:hover {
-    background-color: #1e40af;
-  }
+Computer Science "H" is a **year-long, senior-only, interdisciplinary honors course**, serving as the **Pathway Capstone** aligned with CTE and PLTW capstone expectations.
 
-  #feedback-modal {
-    display: none;
-    position: fixed;
-    bottom: 80px;
-    right: 20px;
-    background: #1f2937;
-    color: white;
-    border-radius: 16px;
-    padding: 20px;
-    width: 320px;
-    max-width: 90vw;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-    border: 1px solid #4b5563;
-    z-index: 1000;
-    animation: slideIn 0.2s ease-out;
-    box-sizing: border-box;
-  }
+> This course functions as a high school senior thesis and a **culminating honors experience**, emphasizing professional collaboration, technical documentation, public presentation, and the development of a fully realized solution to a real-world problem.
 
-  #feedback-modal h4 {
-    color: white;
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 12px;
-    text-align: center;
-    border-bottom: 1px solid #4b5563;
-    padding-bottom: 8px;
-  }
+Students work in teams to identify a real-world problem, conduct research, design and prototype a solution, and present their work to an external audience. The project integrates computer science with related disciplines such as engineering, biomedical science, or other applied fields. Team members may contribute through thesis or project components from their respective disciplines to support interdisciplinary work.
 
-  #feedback-modal textarea,
-  #feedback-modal input {
-    width: 100%;
-    margin-bottom: 12px;
-    padding: 10px;
-    font-size: 14px;
-    color: white;
-    background: #374151;
-    border-radius: 8px;
-    border: 1px solid #6b7280;
-    box-sizing: border-box;
-  }
+- **Prerequisites for Computer Science students:** Completion of AP Computer Science A 1,2 and Data Structures 1,2 (or teacher recommendation), with demonstrated proficiency in:
+  - Programming in Java and/or Python
+  - Object-oriented programming and algorithmic problem solving
+  - Version control and collaborative workflows using GitHub
+  - Linux command-line navigation and scripting
+  - Development in VSCode or a similar IDE
+  - Participation in team-based projects and iterative development cycles (e.g., agile methodologies, design-based research)
 
-  #feedback-modal textarea::placeholder,
-  #feedback-modal input::placeholder {
-    color: #9ca3af;
-  }
+- **Optional prerequisites for Engineering, Biomedical Science, or other applied discipline students:** Defined by their program advisement and aligned with PLTW course expectations.
 
-  #feedback-modal textarea:focus,
-  #feedback-modal input:focus {
-    outline: none;
-    border-color: #3b82f6;
-  }
+> Student projects are tracked and guided using Open Coding Society–supported project guidelines, including enrollment, issue tracking, and iterative review cycles, ensuring progress is documented and supported across disciplines.
 
-  #feedback-modal button {
-    background-color: #3b82f6;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    padding: 10px;
-    width: 100%;
-    font-weight: 500;
-    transition: background-color 0.2s ease-in-out;
-  }
-
-  #feedback-modal button:hover {
-    background-color: #2563eb;
-  }
-
-  #feedback-modal-close {
-    position: absolute;
-    top: 10px;
-    right: 12px;
-    font-size: 16px;
-    font-weight: bold;
-    color: #9ca3af;
-    cursor: pointer;
-  }
-
-  #feedback-modal-close:hover {
-    color: white;
-  }
-
-  #feedback-success,
-  #feedback-error {
-    font-size: 13px;
-    text-align: center;
-    margin-top: 12px;
-  }
-
-  #feedback-success {
-    color: #10b981;
-  }
-
-  #feedback-error {
-    color: #ef4444;
-  }
-
-  @keyframes slideIn {
-    from {
-      transform: translateY(20px);
-      opacity: 0;
-    }
-    to {
-      transform: translateY(0);
-      opacity: 1;
-    }
-  }
-
-  #feedback-modal select {
-    width: 100%;
-    margin-bottom: 12px;
-    padding: 10px;
-    font-size: 14px;
-    color: white;
-    background: #374151;
-    border-radius: 8px;
-    border: 1px solid #6b7280;
-    box-sizing: border-box;
-    appearance: none;
-  }
-
-  #feedback-modal select:focus {
-    outline: none;
-    border-color: #3b82f6;
-  }
-
-  #feedback-modal select option {
-    background-color: #1f2937;
-    color: white;
-  }
-</style>
-
-<!-- Feedback Button & Modal -->
-<button id="feedback-btn">Tell us how we can improve!</button>
-
-<div id="feedback-modal">
-  <div id="feedback-modal-close">✕</div>
-  <h4>Submit Feedback</h4>
-  <select id="feedback-type" required>
-    <option value="">Select Inquiry Type</option>
-    <option value="Bug">Bug</option>
-    <option value="Feature Request">Feature Request</option>
-    <option value="Inquiry">Inquiry</option>
-    <option value="Other">Other</option>
-  </select>
-  <input type="text" id="feedback-title" placeholder="Title" required />
-  <textarea id="feedback-body" rows="4" placeholder="Your suggestion..." required></textarea>
-  <button id="feedback-submit">Submit</button>
-  <div id="feedback-success" style="display:none;">✅ Thanks for your feedback!</div>
-  <div id="feedback-error" style="display:none;">⚠️ Something went wrong.</div>
-</div>
-
-<script type="module">
-  import { javaURI } from '{{ site.baseurl }}/assets/js/api/config.js';
-  import { pythonURI } from '{{ site.baseurl }}/assets/js/api/config.js';
-
-  const btn = document.getElementById("feedback-btn");
-  const modal = document.getElementById("feedback-modal");
-  const closeBtn = document.getElementById("feedback-modal-close");
-  const submitBtn = document.getElementById("feedback-submit");
-  const successMsg = document.getElementById("feedback-success");
-  const errorMsg = document.getElementById("feedback-error");
-  console.log(window.user);
-
-  btn.onclick = () => {
-    modal.style.display = "block";
-    successMsg.style.display = "none";
-    errorMsg.style.display = "none";
-  };
-
-  closeBtn.onclick = () => {
-    modal.style.display = "none";
-  };
-
-  submitBtn.onclick = async () => {
-    const title = document.getElementById("feedback-title").value.trim();
-    const body = document.getElementById("feedback-body").value.trim();
-    const type = document.getElementById("feedback-type").value;
-
-    if (!title || !body) {
-      alert("Please fill in both fields.");
-      return;
-    }
-
-    const githubUsername = window.user?.uid || "Anonymous"; // fallback if not logged in
-    
-    console.log("Payload:", { title, body, type, uid: githubUsername });
-    
-    try {
-      const res = await fetch(`${pythonURI}/api/feedback/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ title, body, type, uid: githubUsername })
-      });
-
-      if (res.ok) {
-        successMsg.style.display = "block";
-        errorMsg.style.display = "none";
-        document.getElementById("feedback-title").value = "";
-        document.getElementById("feedback-body").value = "";
-      } else {
-        throw new Error();
-      }
-    } catch (err) {
-      successMsg.style.display = "none";
-      errorMsg.style.display = "block";
-    }
-  };
-</script>
+This capstone emphasizes creating a **student-designed solution to a real-world problem**, integrating computer science with other applied fields while highlighting professional collaboration, technical documentation, and public presentation.
