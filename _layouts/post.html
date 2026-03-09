@@ -99,7 +99,8 @@ Check if this is a course lesson and determine which course context to use
           {% for week in (sprint.start..sprint.end) %}
           {% for post in posts %}
           {% if post.courses[current_course] %}
-          {% comment %}Include all files with courses frontmatter (including converted notebook markdown files){% endcomment %}
+          {% comment %}Include all files with courses frontmatter (including converted notebook markdown files){%
+          endcomment %}
           {% comment %}Skip files with multiple courses - they should use course-specific versions{% endcomment %}
           {% assign course_count = 0 %}
           {% for course in post.courses %}
@@ -175,6 +176,11 @@ Check if this is a course lesson and determine which course context to use
           {%- endif -%}
 
           {{ content }}
+
+          {% if page.show_gist_export %}
+          {% comment %} Only show the export button when the notebook explicitly requests it {% endcomment %}
+          {% include gist-export-button.html %}
+          {% endif %}
 
           {% if page.assignment %}
           <div class="assignment-submission">
@@ -675,7 +681,7 @@ Check if this is a course lesson and determine which course context to use
   // NOTE: This getUid function is duplicated from admin_foundation.html logic
   async function getUid() {
     try {
-      const res = await fetch(`${pythonURI}/api/id`, fetchOptions ); 
+      const res = await fetch(`${pythonURI}/api/id`, fetchOptions);
 
       if (res.ok) {
         const data = await res.json();
@@ -723,7 +729,7 @@ Check if this is a course lesson and determine which course context to use
         ...submissionData
       };
 
-      const res = await fetch(`${javaURI}/api/grades`, { 
+      const res = await fetch(`${javaURI}/api/grades`, {
         ...fetchOptions,
         method: "POST",
         headers: {
@@ -1584,11 +1590,20 @@ Check if this is a course lesson and determine which course context to use
   {%- endif -%}
   <a class="u-url" href="{{ page.url | relative_url }}" hidden></a>
 <<<<<<< HEAD
+<<<<<<< HEAD
 </article>
 >>>>>>> ebd5887e15ee6344ab4e9836ebe9c3d6fd216a62
 =======
   
+=======
+
+>>>>>>> c3e00578e08685b6731878ede41b5a972a4816ab
   <!-- Enhanced Analytics Tracking -->
+  <script type="module">
+    import { pythonURI, javaURI } from '{{ site.baseurl }}/assets/js/api/config.js';
+    window.pythonURI = pythonURI;
+    window.javaURI = javaURI;
+  </script>
   <script src="{{ site.baseurl }}/assets/js/ocs-analytics-enhanced.js"></script>
   <script src="{{ site.baseurl }}/assets/js/code-runner-analytics.js"></script>
   <script src="{{ site.baseurl }}/assets/js/lesson-completion.js"></script>
