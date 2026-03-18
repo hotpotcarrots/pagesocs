@@ -40,10 +40,6 @@ disqus:
 twitter:
   username: # site's Twitter username, e.g. "mmistakes"
 
-<<<<<<< HEAD
-# Liquid
-#  error_mode: strict
-=======
 # Exclude from Jekyll watch - these are processed by our conversion scripts
 # This prevents double-regeneration when saving notebooks/docx files
 exclude:
@@ -55,38 +51,8 @@ exclude:
   - _docx
   - venv
 
->>>>>>> 82996ee0815317138c543efd5deb77a734a890c2
 
 # Build settings
-<<<<<<< HEAD
-permalink: /:categories/:title/
-markdown: kramdown
-feed:
-  path: atom.xml
-
-# Pagination - https://jekyllrb.com/docs/pagination/
-# paginate: 10
-# paginate_path: /page:num/
-
-# Search
-search_full_content: false # can have performance implications for large sites
-
-# Taxonomy pages
-# category_archive_path: "/categories/#"
-# tag_archive_path: "/tags/#"
-
-# Exclude from processing.
-# The following items will not be processed, by default. Create a custom list
-# to override the default setting.
-# exclude:
-#   - Gemfile
-#   - Gemfile.lock
-#   - node_modules
-#   - vendor/bundle/
-#   - vendor/cache/
-#   - vendor/gems/
-#   - vendor/ruby/
-=======
 # --------------
 #
 # If you wish to use the gem-version of Minima with or without a Gemfile, use
@@ -110,12 +76,8 @@ search_full_content: false # can have performance implications for large sites
 #   quiet_deps: true
 #   silence_deprecations: [import]
 incremental: true
->>>>>>> ebd5887e15ee6344ab4e9836ebe9c3d6fd216a62
 
-<<<<<<< HEAD
-=======
 remote_theme: jekyll/minima
->>>>>>> 3b72ecc8abf749d611941371650792f87531854c
 plugins:
   - jekyll-remote-theme
   - jekyll-include-cache
@@ -134,24 +96,6 @@ defaults:
       layout: post
       share: true
 
-<<<<<<< HEAD
-# Site Author
-author:
-  name:
-  picture:
-  email:
-  twitter:
-  links:
-    - title:
-      url:
-      icon:
-
-# Footer Links
-footer_links:
-  - title: Feed
-    url: atom.xml
-    icon: fas fa-rss-square
-=======
 minima:
   skin: dark
   social_links:
@@ -160,15 +104,7 @@ minima:
     - { platform: youtube, user_url: "https://www.youtube.com/@OpenCodingSociety" } 
   nav_pages:
     - navigation/blog.md
-<<<<<<< HEAD
-    - navigation/search.md
->>>>>>> ebd5887e15ee6344ab4e9836ebe9c3d6fd216a62
-=======
     - navigation/courses.md
     - navigation/search.md
 
 gemini_api_key: AIzaSyBWEz5qHeWx5buC4I4dZ2fllaMk3z8k_-w
-<<<<<<< HEAD
->>>>>>> 82996ee0815317138c543efd5deb77a734a890c2
-=======
->>>>>>> c3e00578e08685b6731878ede41b5a972a4816ab
